@@ -37,6 +37,7 @@ public class Movement : MonoBehaviour {
 
     private Vector3 jumpDirection = Vector3.up;       //jump direction
     [SerializeField] float jumpSpeed = 200f;          //jump strength
+    [SerializeField] bool doubleJumpUsed;             //variable holding if double jump has been used while in air
 
     /* 
      * UPDATE
@@ -57,6 +58,7 @@ public class Movement : MonoBehaviour {
      * If no collisions are detected in a sphere underneath the player, then the player is not grounded
      * else they are grounded
      * this ignores collisions on layer 7, which is the player layer. This will need to be changed if player layer number is changed.
+     * if grounded, reset double jump flag
      */
     private void IsGrounded() {
         Collider[] collisions = Physics.OverlapSphere(groundCheck.position, groundDistance, 7);
@@ -64,6 +66,7 @@ public class Movement : MonoBehaviour {
             isGrounded = false;
         } else {
             isGrounded = true;
+            doubleJumpUsed = false;
         }
     }
     
@@ -110,9 +113,15 @@ public class Movement : MonoBehaviour {
      * set vertical velocity upwards
      */
     private void CalculateJump() {
-        if(Input.GetButtonDown("Jump") && isGrounded) {
-            currentGravity = jumpSpeed;
-            gravityMovement = currentGravity * jumpDirection;
+        if(Input.GetButtonDown("Jump")) {
+            if(isGrounded) {
+                currentGravity = jumpSpeed;
+                gravityMovement = jumpSpeed * jumpDirection;
+            } else if (!doubleJumpUsed) {
+                currentGravity = jumpSpeed;
+                gravityMovement = currentGravity * jumpDirection;
+                doubleJumpUsed = true;
+            }
         }
         controller.Move(gravityMovement * Time.deltaTime);
     }
