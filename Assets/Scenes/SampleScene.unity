@@ -670,7 +670,7 @@ MonoBehaviour:
   controller: {fileID: 619362793}
   cam: {fileID: 963194228}
   cylinderTransform: {fileID: 1780855453}
-  speed: 6
+  speed: 10
   turnSmoothTime: 0.1
   moveDirection: {x: 0, y: 0, z: 0}
   inputDirection: {x: 0, y: 0, z: 0}
@@ -682,9 +682,10 @@ MonoBehaviour:
   gravityMovement: {x: 0, y: 0, z: 0}
   jumpSpeed: 8
   doubleJumpUsed: 0
-  dodgeSpeed: 10
+  dodgeSpeed: 20
   isDodging: 0
-  dodgeLength: 0
+  dodgeLength: 0.25
+  dodgeCoolDown: 0.5
 --- !u!143 &619362793
 CharacterController:
   m_ObjectHideFlags: 0

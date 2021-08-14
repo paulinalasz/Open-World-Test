@@ -154,7 +154,7 @@ public class Movement : MonoBehaviour {
      * cant move while dodging
      */
     private void CalculateDodge() {
-        if (Input.GetKeyDown(KeyCode.CapsLock) && Time.time > lastDodged + dodgeCoolDown) {
+        if (Input.GetKeyDown(KeyCode.CapsLock) && Time.time > lastDodged + dodgeCoolDown && isGrounded) {
             dodgeDirection = cylinderTransform.forward * -1;
             dodgeMovement = dodgeDirection * dodgeSpeed;
             
