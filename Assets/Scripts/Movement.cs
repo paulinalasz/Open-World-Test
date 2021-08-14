@@ -14,12 +14,14 @@ public class Movement : MonoBehaviour {
     //retrieve transforms and controllers
     [SerializeField] CharacterController controller;  //character controller
     [SerializeField] Transform cam;                   //main camera view
+    [SerializeField] Transform cylinderTransform;     //transform of the player
 
     //movement
     [SerializeField] float speed = 6f;                //movement speed
     [SerializeField] float turnSmoothTime = 0.1f;     //time taken to rotate player to the direction that the camera is facing
     private float turnSmoothVelocity;                 //speed to rotate player
     [SerializeField] Vector3 moveDirection;           //the direciton of player movement
+    [SerializeField] Vector3 inputDirection;               //input direction
 
     //is the player grounded?
     [SerializeField] Transform groundCheck;           //position of the ground check
@@ -35,9 +37,20 @@ public class Movement : MonoBehaviour {
     private Vector3 gravityDirection = Vector3.down;  //direction of the gravity
     [SerializeField] Vector3 gravityMovement;         //gravity movement vector
 
+    //Jump
     private Vector3 jumpDirection = Vector3.up;       //jump direction
     [SerializeField] float jumpSpeed = 200f;          //jump strength
     [SerializeField] bool doubleJumpUsed;             //variable holding if double jump has been used while in air
+
+    //BackDodge
+    [SerializeField] float dodgeSpeed;                //Strength of dodge
+    private Vector3 dodgeDirection;                   //Direction of dodge
+    private Vector3 dodgeMovement;                    //movement of dodge
+    [SerializeField] bool isDodging;                  //is the player currently dodging
+    [SerializeField] float dodgeLength;               //how long does a dodge last?
+    private float lastDodged = 0;                     //time last dodged
+    [SerializeField] float dodgeCoolDown;             //time before being able to dodge again
+
 
     /* 
      * UPDATE
@@ -47,10 +60,14 @@ public class Movement : MonoBehaviour {
      * then movement is calcualted
      */
     void Update() {
-        IsGrounded(); 
+        IsGrounded();
+        IsDodging();
+
         CalculateGravity();
         CalculateJump();
+        //CalculateDashForward();
         CalculateMovement();
+        CalculateDodge();
     }
 
     /*
@@ -79,10 +96,10 @@ public class Movement : MonoBehaviour {
     private void CalculateMovement() {
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
-        Vector3 direction = new Vector3(horizontal, 0f, vertical).normalized;
+        inputDirection = new Vector3(horizontal, 0f, vertical).normalized;
 
-        if (direction.magnitude >= 0.1f) {
-            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + cam.eulerAngles.y;
+        if (inputDirection.magnitude >= 0.1f && !isDodging) {
+            float targetAngle = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg + cam.eulerAngles.y;
             float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
             transform.rotation = Quaternion.Euler(0f, angle, 0f);
             moveDirection = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
@@ -111,6 +128,7 @@ public class Movement : MonoBehaviour {
     /*
      * Calcaulte jump
      * set vertical velocity upwards
+     * added double jump
      */
     private void CalculateJump() {
         if(Input.GetButtonDown("Jump")) {
@@ -124,5 +142,37 @@ public class Movement : MonoBehaviour {
             }
         }
         controller.Move(gravityMovement * Time.deltaTime);
+    }
+
+    private void CalculateDashForward() {
+
+    }
+
+    /*
+     * Makes the player dodge backwards
+     * cool down inbetween doding
+     * cant move while dodging
+     */
+    private void CalculateDodge() {
+        if (Input.GetKeyDown(KeyCode.CapsLock) && Time.time > lastDodged + dodgeCoolDown) {
+            dodgeDirection = cylinderTransform.forward * -1;
+            dodgeMovement = dodgeDirection * dodgeSpeed;
+            
+            isDodging = true;
+
+            lastDodged = Time.time;
+        }
+        controller.Move(dodgeMovement * Time.deltaTime);
+    }
+
+    /*
+     * performs check to see if the player is still dodging
+     * once no longer doding, reset the player speed back to 0
+     */
+    private void IsDodging() {
+        if (Time.time > lastDodged + dodgeLength) {
+            isDodging = false;
+            dodgeMovement = Vector3.zero;
+        }
     }
 }

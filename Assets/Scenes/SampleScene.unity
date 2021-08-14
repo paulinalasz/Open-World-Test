@@ -361,7 +361,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 388829343}
-  m_LocalRotation: {x: -0.39942503, y: 0.00000001577422, z: 0.000000006872657, w: 0.91676587}
+  m_LocalRotation: {x: -0.39942503, y: -0.000000015774228, z: -0.000000006872661, w: 0.91676587}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -669,9 +669,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   controller: {fileID: 619362793}
   cam: {fileID: 963194228}
+  cylinderTransform: {fileID: 1780855453}
   speed: 6
   turnSmoothTime: 0.1
   moveDirection: {x: 0, y: 0, z: 0}
+  inputDirection: {x: 0, y: 0, z: 0}
   groundCheck: {fileID: 1798762602}
   groundDistance: 0.4
   isGrounded: 0
@@ -679,6 +681,10 @@ MonoBehaviour:
   maxGravity: -25
   gravityMovement: {x: 0, y: 0, z: 0}
   jumpSpeed: 8
+  doubleJumpUsed: 0
+  dodgeSpeed: 10
+  isDodging: 0
+  dodgeLength: 0
 --- !u!143 &619362793
 CharacterController:
   m_ObjectHideFlags: 0
