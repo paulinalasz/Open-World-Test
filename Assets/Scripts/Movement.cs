@@ -17,11 +17,16 @@ public class Movement : MonoBehaviour {
     [SerializeField] Transform cylinderTransform;     //transform of the player
 
     //movement
-    [SerializeField] float speed = 6f;                //movement speed
+    [SerializeField] float movementSpeed = 9f;                //movement speed
     [SerializeField] float turnSmoothTime = 0.1f;     //time taken to rotate player to the direction that the camera is facing
     private float turnSmoothVelocity;                 //speed to rotate player
     [SerializeField] Vector3 moveDirection;           //the direciton of player movement
-    [SerializeField] Vector3 inputDirection;               //input direction
+    [SerializeField] Vector3 inputDirection;          //input direction
+    [SerializeField] float walkingSpeed = 9f;         //speed when walking
+    [SerializeField] bool isSprinting;                //is the player currently sprinting?
+    [SerializeField] float sprintingSpeed = 18;       //speed when sprinting
+    [SerializeField] bool isCrouching;                //is the player currently crouching?
+    [SerializeField] float crouchingSpeed = 4;        //speed when crouching
 
     //is the player grounded?
     [SerializeField] Transform groundCheck;           //position of the ground check
@@ -62,6 +67,9 @@ public class Movement : MonoBehaviour {
     void Update() {
         IsGrounded();
         IsDodging();
+        IsSprinting();
+        IsCrouching();
+        SetSpeed();
 
         CalculateGravity();
         CalculateJump();
@@ -103,7 +111,36 @@ public class Movement : MonoBehaviour {
             float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
             transform.rotation = Quaternion.Euler(0f, angle, 0f);
             moveDirection = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
-            controller.Move(moveDirection.normalized * speed * Time.deltaTime);
+            controller.Move(moveDirection.normalized * movementSpeed * Time.deltaTime);
+        }
+    }
+
+    private void IsSprinting() {
+        if(Input.GetKey(KeyCode.LeftShift)) {
+            print("sprinting!");
+            isSprinting = true;
+        } else {
+            isSprinting = false;
+        }
+    }
+
+    private void IsCrouching() {
+        if (Input.GetKey(KeyCode.LeftControl)) {
+            print("Crouching!");
+            isCrouching = true;
+        }
+        else {
+            isCrouching = false;
+        }
+    }
+
+    private void SetSpeed() {
+        if (isSprinting) {
+            movementSpeed = sprintingSpeed;
+        } else if (isCrouching) {
+            movementSpeed = crouchingSpeed;
+        } else {
+            movementSpeed = walkingSpeed;
         }
     }
 
@@ -144,7 +181,7 @@ public class Movement : MonoBehaviour {
         controller.Move(gravityMovement * Time.deltaTime);
     }
 
-    private void CalculateDashForward() {
+    private void CalculateSideDodge() {
 
     }
 
