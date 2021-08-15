@@ -49,13 +49,14 @@ public class Movement : MonoBehaviour {
 
     //BackDodge
     [SerializeField] float dodgeSpeed;                //Strength of dodge
-    private Vector3 dodgeDirection;                   //Direction of dodge
+    [SerializeField] Vector3 dodgeDirection;                   //Direction of dodge
     private Vector3 dodgeMovement;                    //movement of dodge
     [SerializeField] bool isDodging;                  //is the player currently dodging
     [SerializeField] float dodgeLength;               //how long does a dodge last?
     private float lastDodged = 0;                     //time last dodged
     [SerializeField] float dodgeCoolDown;             //time before being able to dodge again
 
+    [SerializeField] bool isShooting;                 //is the player shooting?
 
     /* 
      * UPDATE
@@ -66,14 +67,15 @@ public class Movement : MonoBehaviour {
      */
     void Update() {
         IsGrounded();
+        IsShooting();
         IsDodging();
         IsSprinting();
         IsCrouching();
         SetSpeed();
 
+        RetrieveInputDirection();
         CalculateGravity();
         CalculateJump();
-        //CalculateDashForward();
         CalculateMovement();
         CalculateDodge();
     }
@@ -95,17 +97,21 @@ public class Movement : MonoBehaviour {
         }
     }
     
+    /*
+     * Calcualtes the normalised input direction of the player
+     */
+    private void RetrieveInputDirection() {
+        float horizontal = Input.GetAxisRaw("Horizontal");
+        float vertical = Input.GetAxisRaw("Vertical");
+        inputDirection = new Vector3(horizontal, 0f, vertical).normalized;
+    }
+
     /* 
      * Calculates the player movement
-     * retrives the normalised direction of desired movement, based on input and direction faceing
      * if the input is asking for movement, then turn gradually towards the direction of it
      * and move in the desired direction
      */
     private void CalculateMovement() {
-        float horizontal = Input.GetAxisRaw("Horizontal");
-        float vertical = Input.GetAxisRaw("Vertical");
-        inputDirection = new Vector3(horizontal, 0f, vertical).normalized;
-
         if (inputDirection.magnitude >= 0.1f && !isDodging) {
             float targetAngle = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg + cam.eulerAngles.y;
             float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
@@ -181,22 +187,22 @@ public class Movement : MonoBehaviour {
         controller.Move(gravityMovement * Time.deltaTime);
     }
 
-    private void CalculateSideDodge() {
-
-    }
-
     /*
-     * Makes the player dodge backwards
+     * Makes the player dodge towards the input direction (gives 8 total possible directions)
+     * If movement direction is 0, dodge backwards.
      * cool down inbetween doding
      * cant move while dodging
      */
     private void CalculateDodge() {
         if (Input.GetKeyDown(KeyCode.CapsLock) && Time.time > lastDodged + dodgeCoolDown && isGrounded) {
-            dodgeDirection = cylinderTransform.forward * -1;
-            dodgeMovement = dodgeDirection * dodgeSpeed;
-            
-            isDodging = true;
+            if (inputDirection.magnitude >= 0.1f) {
+                dodgeDirection = moveDirection;
+            } else {
+                dodgeDirection = cylinderTransform.forward * -1;
+            }
 
+            dodgeMovement = dodgeDirection * dodgeSpeed;
+            isDodging = true;
             lastDodged = Time.time;
         }
         controller.Move(dodgeMovement * Time.deltaTime);
@@ -210,6 +216,14 @@ public class Movement : MonoBehaviour {
         if (Time.time > lastDodged + dodgeLength) {
             isDodging = false;
             dodgeMovement = Vector3.zero;
+        }
+    }
+
+    private void IsShooting() {
+        if (Input.GetMouseButton(1)) {
+            isShooting = true;
+        } else {
+            isShooting = false;
         }
     }
 }
